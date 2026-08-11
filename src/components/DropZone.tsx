@@ -2,17 +2,17 @@ import { useRef, useState } from 'react'
 import { Camera, ImagePlus, LockKeyhole, Upload } from 'lucide-react'
 
 interface DropZoneProps {
-  onFile: (file: File) => void
+  onFiles: (files: File[]) => void
 }
 
-export function DropZone({ onFile }: DropZoneProps) {
+export function DropZone({ onFiles }: DropZoneProps) {
   const [dragging, setDragging] = useState(false)
   const fileInput = useRef<HTMLInputElement>(null)
   const cameraInput = useRef<HTMLInputElement>(null)
 
   function handleFiles(files: FileList | null) {
-    const file = files?.[0]
-    if (file) onFile(file)
+    const selectedFiles = Array.from(files ?? [])
+    if (selectedFiles.length) onFiles(selectedFiles)
   }
 
   return (
@@ -52,8 +52,8 @@ export function DropZone({ onFile }: DropZoneProps) {
         <div className="upload-icon" aria-hidden="true">
           <ImagePlus size={27} />
         </div>
-        <h2>Add your ID</h2>
-        <p>Drop a photo here, or choose how to add one.</p>
+        <h2>Add your ID photos</h2>
+        <p>Choose one image, or select several to process as a batch.</p>
         <div className="upload-actions">
           <button className="button button-primary" onClick={() => fileInput.current?.click()}>
             <Upload size={18} />
@@ -66,10 +66,11 @@ export function DropZone({ onFile }: DropZoneProps) {
         </div>
         <p className="file-hint">JPEG, PNG or WebP · up to 40 MB</p>
         <input
-          ref={fileInput}
+            ref={fileInput}
           className="visually-hidden"
           type="file"
           accept="image/jpeg,image/png,image/webp"
+          multiple
           onChange={(event) => handleFiles(event.target.files)}
         />
         <input
@@ -92,4 +93,3 @@ export function DropZone({ onFile }: DropZoneProps) {
     </section>
   )
 }
-

@@ -1,4 +1,5 @@
 import {
+  Bookmark,
   CalendarDays,
   Check,
   Crop,
@@ -23,9 +24,12 @@ interface EditorControlsProps {
   watermark: WatermarkSettings
   exportSettings: ExportSettings
   outputLabel: string
+  presetStatus: 'none' | 'saved' | 'changed'
   onCropChange: (settings: CropSettings) => void
   onWatermarkChange: (settings: WatermarkSettings) => void
   onExportChange: (settings: ExportSettings) => void
+  onSavePreset: () => void
+  onRestorePreset: () => void
 }
 
 const colorPresets = ['#ffffff', '#111111', '#ff3b30', '#007aff', '#ffcc00']
@@ -35,9 +39,12 @@ export function EditorControls({
   watermark,
   exportSettings,
   outputLabel,
+  presetStatus,
   onCropChange,
   onWatermarkChange,
   onExportChange,
+  onSavePreset,
+  onRestorePreset,
 }: EditorControlsProps) {
   const updateWatermark = (patch: Partial<WatermarkSettings>) =>
     onWatermarkChange({ ...watermark, ...patch })
@@ -50,6 +57,37 @@ export function EditorControls({
           <h2>Watermark</h2>
         </div>
         <SlidersHorizontal size={20} aria-hidden="true" />
+      </div>
+
+      <div className="preset-row">
+        <div className="preset-copy">
+          <span className="preset-icon"><Bookmark size={16} /></span>
+          <span>
+            <strong>Default preset</strong>
+            <small>Applied to every image</small>
+          </span>
+        </div>
+        <div className="preset-actions">
+          {presetStatus === 'changed' && (
+            <button
+              className="preset-restore"
+              type="button"
+              onClick={onRestorePreset}
+              aria-label="Restore saved default preset"
+              title="Restore saved preset"
+            >
+              <RotateCcw size={14} />
+            </button>
+          )}
+          <button
+            className={`preset-save ${presetStatus === 'saved' ? 'is-saved' : ''}`}
+            type="button"
+            onClick={onSavePreset}
+          >
+            {presetStatus === 'saved' ? <Check size={14} /> : <Bookmark size={14} />}
+            {presetStatus === 'saved' ? 'Saved' : presetStatus === 'changed' ? 'Update' : 'Save default'}
+          </button>
+        </div>
       </div>
 
       <section className="control-section" aria-labelledby="details-heading">
@@ -330,4 +368,3 @@ function RangeField({ label, value, min, max, step = 1, suffix, onChange }: Rang
     </label>
   )
 }
-

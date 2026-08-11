@@ -24,6 +24,6 @@ describe('initial privacy flow', () => {
 
     fireEvent.change(input!, { target: { files: [file] } })
 
-    expect(await screen.findByRole('alert')).toHaveTextContent('Choose a JPEG, PNG or WebP image.')
+    expect(await screen.findByRole('alert')).toHaveTextContent('Choose JPEG, PNG or WebP images.')
   })
 })
