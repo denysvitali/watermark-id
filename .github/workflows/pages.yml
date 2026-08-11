@@ -42,6 +42,12 @@ jobs:
       - name: Build production site
         run: pnpm build
 
+      - name: Install browser for end-to-end tests
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Run end-to-end tests
+        run: pnpm test:e2e
+
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
         with:
