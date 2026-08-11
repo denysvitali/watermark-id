@@ -29,6 +29,7 @@ import type {
 } from './types'
 
 const MAX_FILE_SIZE = 40 * 1024 * 1024
+const SUPPORTED_IMAGE_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp'])
 
 function localDateValue() {
   const now = new Date()
@@ -95,7 +96,7 @@ export default function App() {
     setError('')
     setNotice('')
 
-    if (!file.type.startsWith('image/')) {
+    if (!SUPPORTED_IMAGE_TYPES.has(file.type)) {
       setError('Choose a JPEG, PNG or WebP image.')
       return
     }
