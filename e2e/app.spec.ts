@@ -25,7 +25,7 @@ test('loads, customizes, crops, and downloads an ID', async ({ page }) => {
 
   await expect(page.getByLabel(/watermarked id preview/i)).toBeVisible()
   await page.getByLabel('Target company').fill('Northstar Bank')
-  await page.getByLabel('Use credit card crop').check()
+  await page.getByLabel('Use credit card crop').press('Space')
   await expect(page.getByText(/ID-1 · 85\.60/)).toBeVisible()
   await page.getByRole('button', { name: 'Focus' }).click()
 
@@ -38,11 +38,14 @@ test('loads, customizes, crops, and downloads an ID', async ({ page }) => {
 
 test('loads the complete application shell while offline', async ({ page, context }) => {
   await page.goto('./')
-  await page.waitForFunction(() => navigator.serviceWorker.controller !== null)
+  await page.evaluate(async () => {
+    await navigator.serviceWorker.ready
+  })
+  await page.reload()
+  await expect.poll(() => page.evaluate(() => navigator.serviceWorker.controller !== null)).toBe(true)
 
   await context.setOffline(true)
   await page.reload({ waitUntil: 'domcontentloaded' })
 
   await expect(page.getByRole('heading', { name: /share your id/i })).toBeVisible()
 })
-
