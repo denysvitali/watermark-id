@@ -27,8 +27,9 @@ test('loads, customizes, crops, and downloads an ID', async ({ page }) => {
   expect(await stickyPreview.evaluate((element) => getComputedStyle(element).position)).toBe('sticky')
   await page.getByRole('heading', { name: 'Export' }).scrollIntoViewIfNeeded()
   const previewBounds = await stickyPreview.boundingBox()
-  expect(previewBounds?.bottom).toBeGreaterThan(0)
-  expect(previewBounds?.top).toBeLessThan(viewport.height)
+  expect(previewBounds).not.toBeNull()
+  expect(previewBounds!.y + previewBounds!.height).toBeGreaterThan(0)
+  expect(previewBounds!.y).toBeLessThan(viewport.height)
 
   await page.getByLabel('Use credit card crop').press('Space')
   await expect(page.getByText(/ID-1 · 85\.60/)).toBeVisible()
