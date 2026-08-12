@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react'
-import { Camera, ImagePlus, LockKeyhole, Upload } from 'lucide-react'
+import { Camera, CodeXml, Crop, Download, ImagePlus, LockKeyhole, Upload } from 'lucide-react'
 import type { Translate } from '../i18n'
+import { GITHUB_LICENSE, GITHUB_REPO } from '../site'
 
 interface DropZoneProps {
   onFiles: (files: File[]) => void
@@ -91,6 +92,40 @@ export function DropZone({ onFiles, t }: DropZoneProps) {
         <span className="privacy-divider" />
         <span>{t('noTracking')}</span>
       </div>
+
+      <ol className="how-it-works" aria-label={t('howItWorks')}>
+        <li>
+          <span className="how-icon" aria-hidden="true"><ImagePlus size={18} /></span>
+          <strong>{t('stepAddTitle')}</strong>
+          <p>{t('stepAddBody')}</p>
+        </li>
+        <li>
+          <span className="how-icon" aria-hidden="true"><Crop size={18} /></span>
+          <strong>{t('stepMarkTitle')}</strong>
+          <p>{t('stepMarkBody')}</p>
+        </li>
+        <li>
+          <span className="how-icon" aria-hidden="true"><Download size={18} /></span>
+          <strong>{t('stepExportTitle')}</strong>
+          <p>{t('stepExportBody')}</p>
+        </li>
+      </ol>
+
+      <aside className="open-source-card">
+        <div className="open-source-copy">
+          <strong>{t('openSourceTitle')}</strong>
+          <p>{t('openSourceBody')}</p>
+        </div>
+        <div className="open-source-actions">
+          <a className="button button-secondary" href={GITHUB_REPO} target="_blank" rel="noreferrer">
+            <CodeXml size={16} />
+            {t('viewOnGitHub')}
+          </a>
+          <a className="license-link" href={GITHUB_LICENSE} target="_blank" rel="noreferrer">
+            {t('mitLicensed')}
+          </a>
+        </div>
+      </aside>
     </section>
   )
 }

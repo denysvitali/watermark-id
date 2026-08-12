@@ -2,6 +2,7 @@
   "name": "watermark-id",
   "private": true,
   "version": "0.1.0",
+  "license": "MIT",
   "packageManager": "pnpm@11.10.0",
   "type": "module",
   "scripts": {

@@ -21,4 +21,12 @@ describe('localization', () => {
   it('interpolates values in translated messages', () => {
     expect(translate('es')('downloadBatch', { count: 3 })).toBe('Descargar lote (3)')
   })
+
+  it('keeps source and license labels in every locale', () => {
+    expect(translate('en')('viewOnGitHub')).toBe('View on GitHub')
+    expect(translate('fr')('viewSourceAria')).toContain('GitHub')
+    expect(translate('it')('mitLicensed')).toContain('MIT')
+    expect(translate('es')('openSourceTitle')).toBe('Código abierto')
+    expect(translate('de')('howItWorks')).toBe('So funktioniert’s')
+  })
 })

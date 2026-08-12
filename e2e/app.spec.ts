@@ -5,6 +5,24 @@ const samplePng = Buffer.from(
   'base64',
 )
 
+test('landing page links to the public source and license', async ({ page }) => {
+  await page.goto('./')
+  await expect(page.getByRole('heading', { name: /share your id/i })).toBeVisible()
+  await expect(page.getByRole('link', { name: /view source on github/i })).toHaveAttribute(
+    'href',
+    'https://github.com/denysvitali/watermark-id',
+  )
+  await expect(page.getByRole('link', { name: 'View on GitHub' })).toHaveAttribute(
+    'href',
+    'https://github.com/denysvitali/watermark-id',
+  )
+  await expect(page.getByRole('link', { name: 'MIT licensed' })).toHaveAttribute(
+    'href',
+    'https://github.com/denysvitali/watermark-id/blob/main/LICENSE',
+  )
+  await expect(page.getByText('Mark locally')).toBeVisible()
+})
+
 test('loads, customizes, crops, and downloads an ID', async ({ page }) => {
   await page.goto('./')
   await expect(page.getByRole('heading', { name: /share your id/i })).toBeVisible()

@@ -40,3 +40,7 @@ pnpm test:e2e
 ## Privacy model
 
 The app has no server-side component. Imported files and batches remain in browser memory, and the downloaded images are newly rendered through Canvas, which also avoids carrying source-file metadata into the export. Saved presets contain only editor settings in local storage—never image data. The service worker caches only the application shell and same-origin static assets required for offline use.
+
+## License
+
+MIT. See [LICENSE](LICENSE). Source and contributions: [github.com/denysvitali/watermark-id](https://github.com/denysvitali/watermark-id).

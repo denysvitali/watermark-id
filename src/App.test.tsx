@@ -24,6 +24,21 @@ describe('initial privacy flow', () => {
     expect(screen.getByText('No uploads')).toBeInTheDocument()
     expect(screen.getByText('Works offline')).toBeInTheDocument()
     expect(screen.getByText('No tracking')).toBeInTheDocument()
+    expect(screen.getByText('Add photos')).toBeInTheDocument()
+    expect(screen.getByText('Mark locally')).toBeInTheDocument()
+    expect(screen.getByText('Export')).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'View source on GitHub' })).toHaveAttribute(
+      'href',
+      'https://github.com/denysvitali/watermark-id',
+    )
+    expect(screen.getByRole('link', { name: 'View on GitHub' })).toHaveAttribute(
+      'href',
+      'https://github.com/denysvitali/watermark-id',
+    )
+    expect(screen.getByRole('link', { name: 'MIT licensed' })).toHaveAttribute(
+      'href',
+      'https://github.com/denysvitali/watermark-id/blob/main/LICENSE',
+    )
   })
 
   it('rejects active image formats that could reference remote resources', async () => {

@@ -5,6 +5,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Download,
+  CodeXml,
   FileImage,
   Languages,
   Images,
@@ -44,6 +45,7 @@ import {
   getOutputSize,
   safeFileStem,
 } from './lib/watermark'
+import { GITHUB_LICENSE, GITHUB_REPO } from './site'
 import type {
   CropSettings,
   ExportSettings,
@@ -334,6 +336,17 @@ export default function App() {
           <span>Watermark <strong>ID</strong></span>
         </a>
         <div className="header-actions">
+          <a
+            className="github-link"
+            href={GITHUB_REPO}
+            target="_blank"
+            rel="noreferrer"
+            aria-label={t('viewSourceAria')}
+            title={t('viewSource')}
+          >
+            <CodeXml size={16} />
+            <span>{t('viewSource')}</span>
+          </a>
           <label className="language-picker">
             <Languages size={15} aria-hidden="true" />
             <span className="visually-hidden">{t('language')}</span>
@@ -495,6 +508,10 @@ export default function App() {
           <span>Watermark ID</span>
           <span className="footer-dot">·</span>
           <span>{t('privateOfflineYours')}</span>
+          <span className="footer-dot">·</span>
+          <a href={GITHUB_REPO} target="_blank" rel="noreferrer">{t('viewSource')}</a>
+          <span className="footer-dot">·</span>
+          <a href={GITHUB_LICENSE} target="_blank" rel="noreferrer">{t('mitLicense')}</a>
         </footer>
       )}
     </div>
