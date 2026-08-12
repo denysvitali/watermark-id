@@ -6,6 +6,7 @@ import {
   ChevronRight,
   Download,
   FileImage,
+  Languages,
   Images,
   LockKeyhole,
   Plus,
@@ -19,6 +20,16 @@ import { DropZone } from './components/DropZone'
 import { EditorControls } from './components/EditorControls'
 import { PreviewCanvas } from './components/PreviewCanvas'
 import { canvasToBlob, renderWatermarkedCanvas } from './lib/canvas'
+import {
+  defaultPurpose,
+  getInitialLocale,
+  isDefaultPurpose,
+  LOCALE_STORAGE_KEY,
+  localeNames,
+  supportedLocales,
+  translate,
+  type Locale,
+} from './i18n'
 import {
   applyPreset,
   createPreset,
@@ -76,10 +87,10 @@ const initialExport: ExportSettings = {
   quality: 92,
 }
 
-function getInitialEditorState() {
+function getInitialEditorState(locale: Locale) {
   const fallback = {
     crop: initialCrop,
-    watermark: { ...initialWatermark, date: localDateValue() },
+    watermark: { ...initialWatermark, purpose: defaultPurpose(locale), date: localDateValue() },
     exportSettings: initialExport,
     savedPreset: null as StoredPreset | null,
   }
@@ -95,7 +106,9 @@ function getInitialEditorState() {
 }
 
 export default function App() {
-  const initialState = useMemo(getInitialEditorState, [])
+  const [locale, setLocale] = useState(getInitialLocale)
+  const t = useMemo(() => translate(locale), [locale])
+  const initialState = useMemo(() => getInitialEditorState(locale), [])
   const [assets, setAssets] = useState<ImageAsset[]>([])
   const [activeIndex, setActiveIndex] = useState(0)
   const [crop, setCrop] = useState(initialState.crop)
@@ -113,6 +126,12 @@ export default function App() {
   useEffect(() => {
     assetsRef.current = assets
   }, [assets])
+
+  useEffect(() => {
+    document.documentElement.lang = locale
+    document.title = t('pageTitle')
+    document.querySelector<HTMLMetaElement>('meta[name="description"]')?.setAttribute('content', t('metaDescription'))
+  }, [locale, t])
 
   useEffect(() => {
     return () => {
@@ -142,7 +161,7 @@ export default function App() {
     try {
       await new Promise<void>((resolve, reject) => {
         image.onload = () => resolve()
-        image.onerror = () => reject(new Error(`${file.name} could not be read.`))
+        image.onerror = () => reject(new Error(t('imageUnreadableNamed', { name: file.name })))
         image.src = objectUrl
       })
 
@@ -172,8 +191,8 @@ export default function App() {
     if (!supported.length) {
       setError(
         files.some((file) => file.size > MAX_FILE_SIZE)
-          ? 'Each image must be 40 MB or smaller.'
-          : 'Choose JPEG, PNG or WebP images.',
+          ? t('maxFileSize')
+          : t('chooseSupported'),
       )
       return
     }
@@ -187,7 +206,7 @@ export default function App() {
       const skipped = initiallySkipped + results.filter((result) => result.status === 'rejected').length
 
       if (!decoded.length) {
-        setError('The selected images could not be read.')
+        setError(t('imagesUnreadable'))
         return
       }
 
@@ -195,12 +214,12 @@ export default function App() {
       setAssets((current) => [...current, ...decoded])
       setActiveIndex(firstNewIndex)
       if (skipped) {
-        setError(`${skipped} unsupported or oversized ${skipped === 1 ? 'file was' : 'files were'} skipped.`)
+        setError(skipped === 1 ? t('skippedOne') : t('skippedMany', { count: skipped }))
       } else if (decoded.length > 1) {
-        setNotice(`${decoded.length} images added. Your current settings apply to the whole batch.`)
+        setNotice(t('batchAdded', { count: decoded.length }))
       }
     } catch (loadError) {
-      setError(loadError instanceof Error ? loadError.message : 'One of the images could not be read.')
+      setError(loadError instanceof Error ? loadError.message : t('oneImageUnreadable'))
     } finally {
       setImporting(false)
     }
@@ -220,10 +239,10 @@ export default function App() {
     try {
       savePreset(window.localStorage, currentPreset)
       setSavedPreset(currentPreset)
-      setNotice('Default preset saved on this device.')
+      setNotice(t('presetSavedNotice'))
       setError('')
     } catch {
-      setError('This browser could not save the preset.')
+      setError(t('presetSaveError'))
     }
   }
 
@@ -233,13 +252,13 @@ export default function App() {
     setWatermark(applied.watermark)
     setCrop(applied.crop)
     setExportSettings(applied.exportSettings)
-    setNotice('Default preset restored.')
+    setNotice(t('presetRestoredNotice'))
     setError('')
   }
 
   async function createExport(target: ImageAsset) {
     if (!watermark.company.trim()) {
-      throw new Error('Enter the target company before exporting your ID.')
+      throw new Error(t('enterCompany'))
     }
 
     const canvas = renderWatermarkedCanvas({
@@ -266,7 +285,7 @@ export default function App() {
       if (assets.length === 1) {
         const { blob, filename } = await createExport(assets[0])
         downloadBlob(blob, filename)
-        setNotice('Saved to your device.')
+        setNotice(t('savedNotice'))
       } else {
         const entries: Record<string, Uint8Array> = {}
         for (const [index, target] of assets.entries()) {
@@ -277,10 +296,10 @@ export default function App() {
         const archive = await createZip(entries)
         const archiveBlob = new Blob([archive.buffer as ArrayBuffer], { type: 'application/zip' })
         downloadBlob(archiveBlob, `watermarked-ids-${localDateValue()}.zip`)
-        setNotice(`${assets.length} watermarked IDs saved in one ZIP.`)
+        setNotice(t('batchSavedNotice', { count: assets.length }))
       }
     } catch (exportError) {
-      setError(exportError instanceof Error ? exportError.message : 'The images could not be exported.')
+      setError(exportError instanceof Error ? exportError.message : t('exportError'))
     } finally {
       setExporting(false)
     }
@@ -295,13 +314,13 @@ export default function App() {
       const { blob, filename } = await createExport(asset)
       const file = new File([blob], filename, { type: blob.type })
       if (navigator.canShare && !navigator.canShare({ files: [file] })) {
-        throw new Error('File sharing is not available here. Download the image instead.')
+        throw new Error(t('sharingUnavailable'))
       }
-      await navigator.share({ files: [file], title: 'Watermarked ID' })
-      setNotice('Shared securely from your device.')
+      await navigator.share({ files: [file], title: t('shareTitle') })
+      setNotice(t('sharedNotice'))
     } catch (shareError) {
       if (shareError instanceof DOMException && shareError.name === 'AbortError') return
-      setError(shareError instanceof Error ? shareError.message : 'The image could not be shared.')
+      setError(shareError instanceof Error ? shareError.message : t('shareError'))
     } finally {
       setExporting(false)
     }
@@ -310,54 +329,78 @@ export default function App() {
   return (
     <div className="app-shell">
       <header className="app-header">
-        <a className="brand" href={import.meta.env.BASE_URL} aria-label="Watermark ID home">
+        <a className="brand" href={import.meta.env.BASE_URL} aria-label={t('home')}>
           <span className="brand-mark"><ShieldCheck size={20} /></span>
           <span>Watermark <strong>ID</strong></span>
         </a>
-        <div className="local-badge" title="Images never leave this device">
-          <span className="status-dot" />
-          <LockKeyhole size={14} />
-          On-device only
+        <div className="header-actions">
+          <label className="language-picker">
+            <Languages size={15} aria-hidden="true" />
+            <span className="visually-hidden">{t('language')}</span>
+            <select
+              aria-label={t('language')}
+              value={locale}
+              onChange={(event) => {
+                const nextLocale = event.target.value as Locale
+                try { window.localStorage.setItem(LOCALE_STORAGE_KEY, nextLocale) } catch { /* optional preference */ }
+                setWatermark((current) => isDefaultPurpose(current.purpose)
+                  ? { ...current, purpose: defaultPurpose(nextLocale) }
+                  : current)
+                setLocale(nextLocale)
+                setError('')
+                setNotice('')
+              }}
+            >
+              {supportedLocales.map((language) => (
+                <option value={language} key={language}>{localeNames[language]}</option>
+              ))}
+            </select>
+          </label>
+          <div className="local-badge" title={t('imagesStayLocal')}>
+            <span className="status-dot" />
+            <LockKeyhole size={14} />
+            {t('onDeviceOnly')}
+          </div>
         </div>
       </header>
 
       <div className="app-content">
         {!asset ? (
-          <DropZone onFiles={loadFiles} />
+          <DropZone onFiles={loadFiles} t={t} />
         ) : (
           <main className="editor">
-            <section className="preview-column" aria-label="Document preview">
+            <section className="preview-column" aria-label={t('documentPreview')}>
               <div className="file-toolbar">
                 <div className="file-summary">
                   <span className="file-icon"><FileImage size={17} /></span>
                   <span className="file-copy">
                     <strong>{asset.fileName}</strong>
-                    <small>{formatBytes(asset.fileSize)} · {asset.width} × {asset.height} px</small>
+                    <small>{formatBytes(asset.fileSize, locale)} · {asset.width.toLocaleString(locale)} × {asset.height.toLocaleString(locale)} px</small>
                   </span>
-                  {assets.length > 1 && <span className="batch-badge"><Images size={12} /> Batch</span>}
+                  {assets.length > 1 && <span className="batch-badge"><Images size={12} /> {t('batch')}</span>}
                 </div>
                 <div className="toolbar-actions">
                   {assets.length > 1 && (
-                    <div className="batch-nav" aria-label="Batch image navigation">
+                    <div className="batch-nav" aria-label={t('batchNavigation')}>
                       <button
                         type="button"
-                        aria-label="Previous image"
+                        aria-label={t('previousImage')}
                         disabled={activeIndex === 0}
                         onClick={() => setActiveIndex((index) => Math.max(0, index - 1))}
                       ><ChevronLeft size={15} /></button>
-                      <span>{activeIndex + 1} of {assets.length}</span>
+                      <span>{t('positionOfTotal', { position: activeIndex + 1, total: assets.length })}</span>
                       <button
                         type="button"
-                        aria-label="Next image"
+                        aria-label={t('nextImage')}
                         disabled={activeIndex === assets.length - 1}
                         onClick={() => setActiveIndex((index) => Math.min(assets.length - 1, index + 1))}
                       ><ChevronRight size={15} /></button>
                     </div>
                   )}
                   <button className="icon-label-button" type="button" disabled={importing} onClick={() => addInput.current?.click()}>
-                    <Plus size={16} /> {importing ? 'Adding…' : 'Add'}
+                    <Plus size={16} /> {importing ? t('adding') : t('add')}
                   </button>
-                  <button className="icon-button danger-hover" type="button" onClick={removeActiveAsset} aria-label="Remove current image">
+                  <button className="icon-button danger-hover" type="button" onClick={removeActiveAsset} aria-label={t('removeImage')}>
                     <Trash2 size={17} />
                   </button>
                 </div>
@@ -382,12 +425,13 @@ export default function App() {
                   crop={crop}
                   watermark={watermark}
                   onCropChange={setCrop}
+                  t={t}
                 />
               </div>
 
               <div className="preview-footnote">
-                <span><ShieldCheck size={15} /> Preview rendered locally</span>
-                <span>{outputSize?.width.toLocaleString()} × {outputSize?.height.toLocaleString()} px</span>
+                <span><ShieldCheck size={15} /> {t('renderedLocally')}</span>
+                <span>{outputSize?.width.toLocaleString(locale)} × {outputSize?.height.toLocaleString(locale)} px</span>
               </div>
             </section>
 
@@ -395,13 +439,14 @@ export default function App() {
               crop={crop}
               watermark={watermark}
               exportSettings={exportSettings}
-              outputLabel={outputSize ? `${outputSize.width.toLocaleString()} × ${outputSize.height.toLocaleString()} px` : '—'}
+              outputLabel={outputSize ? `${outputSize.width.toLocaleString(locale)} × ${outputSize.height.toLocaleString(locale)} px` : '—'}
               presetStatus={presetStatus}
               onCropChange={setCrop}
               onWatermarkChange={setWatermark}
               onExportChange={setExportSettings}
               onSavePreset={saveCurrentPreset}
               onRestorePreset={restoreSavedPreset}
+              t={t}
             />
           </main>
         )}
@@ -413,21 +458,21 @@ export default function App() {
             <div className="privacy-note">
               <span className="privacy-icon"><ShieldCheck size={19} /></span>
               <span>
-                <strong>{assets.length > 1 ? `${assets.length} IDs · one private batch` : 'Your ID stays private'}</strong>
-                <small>Processed entirely in this browser</small>
+                <strong>{assets.length > 1 ? t('idsPrivateBatch', { count: assets.length }) : t('idStaysPrivate')}</strong>
+                <small>{t('processedInBrowser')}</small>
               </span>
             </div>
             <div className="export-actions">
               {canShare && (
                 <button className="button button-secondary share-button" type="button" disabled={exporting} onClick={handleShare}>
-                  <Share2 size={18} /> Share
+                  <Share2 size={18} /> {t('share')}
                 </button>
               )}
               <button className="button button-primary download-button" type="button" disabled={exporting} onClick={handleDownload}>
                 {exporting ? <span className="spinner" /> : <Download size={19} />}
                 {exporting
-                  ? assets.length > 1 ? `Preparing ${assets.length}…` : 'Preparing…'
-                  : assets.length > 1 ? `Download batch (${assets.length})` : 'Download watermarked ID'}
+                  ? assets.length > 1 ? t('preparingCount', { count: assets.length }) : t('preparing')
+                  : assets.length > 1 ? t('downloadBatch', { count: assets.length }) : t('downloadId')}
                 {!exporting && <Sparkles className="button-sparkle" size={14} />}
               </button>
             </div>
@@ -439,7 +484,7 @@ export default function App() {
         <div className={`toast ${error ? 'toast-error' : 'toast-success'}`} role={error ? 'alert' : 'status'}>
           <span>{error ? <X size={17} /> : <Check size={17} />}</span>
           {error || notice}
-          <button type="button" onClick={() => { setError(''); setNotice('') }} aria-label="Dismiss message">
+          <button type="button" onClick={() => { setError(''); setNotice('') }} aria-label={t('dismiss')}>
             <X size={15} />
           </button>
         </div>
@@ -449,7 +494,7 @@ export default function App() {
         <footer className="site-footer">
           <span>Watermark ID</span>
           <span className="footer-dot">·</span>
-          <span>Private. Offline. Yours.</span>
+          <span>{t('privateOfflineYours')}</span>
         </footer>
       )}
     </div>
@@ -476,7 +521,7 @@ function createZip(entries: Record<string, Uint8Array>) {
   })
 }
 
-function formatBytes(bytes: number) {
-  if (bytes < 1024 * 1024) return `${Math.max(1, Math.round(bytes / 1024))} KB`
-  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
+function formatBytes(bytes: number, locale: Locale) {
+  if (bytes < 1024 * 1024) return `${Math.max(1, Math.round(bytes / 1024)).toLocaleString(locale)} KB`
+  return `${(bytes / (1024 * 1024)).toLocaleString(locale, { maximumFractionDigits: 1, minimumFractionDigits: 1 })} MB`
 }

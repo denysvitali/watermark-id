@@ -136,6 +136,41 @@ canvas:focus-visible {
   font-weight: 650;
 }
 
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.language-picker {
+  height: 32px;
+  padding: 0 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  color: var(--secondary);
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.language-picker select {
+  max-width: 86px;
+  padding: 0 16px 0 0;
+  border: 0;
+  color: var(--ink);
+  background: transparent;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  outline: 0;
+}
+
+.language-picker:focus-within {
+  outline: 3px solid rgba(0, 113, 227, 0.32);
+  outline-offset: 2px;
+}
+
 .status-dot {
   width: 6px;
   height: 6px;
@@ -1399,6 +1434,14 @@ input[type="range"]::-moz-range-thumb {
     display: none;
   }
 
+  .header-actions {
+    gap: 6px;
+  }
+
+  .language-picker {
+    height: 29px;
+  }
+
   .editor {
     min-height: auto;
     padding: 16px 14px 24px;
@@ -1583,6 +1626,12 @@ input[type="range"]::-moz-range-thumb {
   .download-button {
     padding-inline: 13px;
     font-size: 13px;
+  }
+}
+
+@media (max-width: 420px) {
+  .local-badge {
+    display: none;
   }
 }
 

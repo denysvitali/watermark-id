@@ -3,12 +3,14 @@ import { Crop, Move } from 'lucide-react'
 import type { CropSettings, ImageAsset, WatermarkSettings } from '../types'
 import { renderWatermarkedCanvas } from '../lib/canvas'
 import { clamp, ID_CARD_HEIGHT_MM, ID_CARD_WIDTH_MM } from '../lib/watermark'
+import type { Translate } from '../i18n'
 
 interface PreviewCanvasProps {
   asset: ImageAsset
   crop: CropSettings
   watermark: WatermarkSettings
   onCropChange: (crop: CropSettings) => void
+  t: Translate
 }
 
 export function PreviewCanvas({
@@ -16,6 +18,7 @@ export function PreviewCanvas({
   crop,
   watermark,
   onCropChange,
+  t,
 }: PreviewCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const pointerRef = useRef<{ x: number; y: number } | null>(null)
@@ -59,7 +62,7 @@ export function PreviewCanvas({
       <canvas
         ref={canvasRef}
         className={rendering ? 'is-rendering' : ''}
-        aria-label={crop.enabled ? 'Watermarked ID preview. Drag to reposition the crop.' : 'Watermarked ID preview'}
+        aria-label={crop.enabled ? t('previewCrop') : t('preview')}
         tabIndex={crop.enabled ? 0 : -1}
         onPointerDown={(event) => {
           if (!crop.enabled) return
@@ -102,11 +105,10 @@ export function PreviewCanvas({
             ID-1 · {ID_CARD_WIDTH_MM.toFixed(2)} × {ID_CARD_HEIGHT_MM.toFixed(2)} mm
           </div>
           <div className="drag-hint" aria-hidden="true">
-            <Move size={14} /> Drag to reposition
+            <Move size={14} /> {t('dragToReposition')}
           </div>
         </>
       )}
     </div>
   )
 }
-

@@ -1,6 +1,17 @@
-import { fireEvent, render, screen } from '@testing-library/react'
-import { describe, expect, it } from 'vitest'
+import { cleanup, fireEvent, render, screen } from '@testing-library/react'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import App from './App'
+import { LOCALE_STORAGE_KEY } from './i18n'
+
+beforeEach(() => {
+  window.localStorage.clear()
+  document.documentElement.lang = 'en'
+})
+
+afterEach(() => {
+  cleanup()
+  vi.restoreAllMocks()
+})
 
 describe('initial privacy flow', () => {
   it('explains local processing and offers file and camera input', () => {
@@ -25,5 +36,28 @@ describe('initial privacy flow', () => {
     fireEvent.change(input!, { target: { files: [file] } })
 
     expect(await screen.findByRole('alert')).toHaveTextContent('Choose JPEG, PNG or WebP images.')
+  })
+
+  it('switches language immediately and remembers the user preference', () => {
+    render(<App />)
+
+    fireEvent.change(screen.getByRole('combobox', { name: 'Language' }), {
+      target: { value: 'de' },
+    })
+
+    expect(screen.getByRole('heading', { name: /teile deinen ausweis/i })).toBeInTheDocument()
+    expect(screen.getByRole('combobox', { name: 'Sprache' })).toHaveValue('de')
+    expect(document.documentElement).toHaveAttribute('lang', 'de')
+    expect(window.localStorage.getItem(LOCALE_STORAGE_KEY)).toBe('de')
+  })
+
+  it('starts in the first supported language from browser preferences', () => {
+    vi.spyOn(window.navigator, 'languages', 'get').mockReturnValue(['pt-BR', 'fr-CA'])
+
+    render(<App />)
+
+    expect(screen.getByRole('heading', { name: /partagez votre pièce d’identité/i })).toBeInTheDocument()
+    expect(screen.getByRole('combobox', { name: 'Langue' })).toHaveValue('fr')
+    expect(window.localStorage.getItem(LOCALE_STORAGE_KEY)).toBeNull()
   })
 })

@@ -15,6 +15,7 @@ A private, installable web tool for cropping and watermarking ID-card photos. Th
 - JPEG, PNG, and WebP output with quality controls
 - Installable offline experience backed by a service worker
 - Responsive, touch-friendly interface
+- Automatic browser-language detection with a persistent English, French, Italian, Spanish, and German switcher
 - Sticky preview that remains visible while editing long settings panels
 
 ## Development

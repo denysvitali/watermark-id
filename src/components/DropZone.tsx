@@ -1,11 +1,13 @@
 import { useRef, useState } from 'react'
 import { Camera, ImagePlus, LockKeyhole, Upload } from 'lucide-react'
+import type { Translate } from '../i18n'
 
 interface DropZoneProps {
   onFiles: (files: File[]) => void
+  t: Translate
 }
 
-export function DropZone({ onFiles }: DropZoneProps) {
+export function DropZone({ onFiles, t }: DropZoneProps) {
   const [dragging, setDragging] = useState(false)
   const fileInput = useRef<HTMLInputElement>(null)
   const cameraInput = useRef<HTMLInputElement>(null)
@@ -20,16 +22,15 @@ export function DropZone({ onFiles }: DropZoneProps) {
       <div className="welcome-copy">
         <div className="eyebrow">
           <LockKeyhole size={15} strokeWidth={2.2} />
-          Private by design
+          {t('privateByDesign')}
         </div>
         <h1 id="welcome-title">
-          Share your ID.
+          {t('heroLead')}
           <br />
-          <span>Keep control.</span>
+          <span>{t('heroAccent')}</span>
         </h1>
         <p>
-          Crop and watermark sensitive documents without sending them anywhere.
-          Everything happens on this device.
+          {t('heroDescription')}
         </p>
       </div>
 
@@ -52,19 +53,19 @@ export function DropZone({ onFiles }: DropZoneProps) {
         <div className="upload-icon" aria-hidden="true">
           <ImagePlus size={27} />
         </div>
-        <h2>Add your ID photos</h2>
-        <p>Choose one image, or select several to process as a batch.</p>
+        <h2>{t('addPhotos')}</h2>
+        <p>{t('addPhotosDescription')}</p>
         <div className="upload-actions">
           <button className="button button-primary" onClick={() => fileInput.current?.click()}>
             <Upload size={18} />
-            Choose photo
+            {t('choosePhoto')}
           </button>
           <button className="button button-secondary" onClick={() => cameraInput.current?.click()}>
             <Camera size={18} />
-            Take photo
+            {t('takePhoto')}
           </button>
         </div>
-        <p className="file-hint">JPEG, PNG or WebP · up to 40 MB</p>
+        <p className="file-hint">{t('fileHint')}</p>
         <input
             ref={fileInput}
           className="visually-hidden"
@@ -83,12 +84,12 @@ export function DropZone({ onFiles }: DropZoneProps) {
         />
       </div>
 
-      <div className="privacy-row" aria-label="Privacy details">
-        <span><LockKeyhole size={15} /> No uploads</span>
+      <div className="privacy-row" aria-label={t('privacyDetails')}>
+        <span><LockKeyhole size={15} /> {t('noUploads')}</span>
         <span className="privacy-divider" />
-        <span>Works offline</span>
+        <span>{t('worksOffline')}</span>
         <span className="privacy-divider" />
-        <span>No tracking</span>
+        <span>{t('noTracking')}</span>
       </div>
     </section>
   )
