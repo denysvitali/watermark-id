@@ -23,10 +23,10 @@ describe('localization', () => {
   })
 
   it('keeps source and license labels in every locale', () => {
-    expect(translate('en')('viewOnGitHub')).toBe('View on GitHub')
+    expect(translate('en')('viewSource')).toBe('View source')
     expect(translate('fr')('viewSourceAria')).toContain('GitHub')
-    expect(translate('it')('mitLicensed')).toContain('MIT')
-    expect(translate('es')('openSourceTitle')).toBe('Código abierto')
-    expect(translate('de')('howItWorks')).toBe('So funktioniert’s')
+    expect(translate('it')('mitLicense')).toContain('MIT')
+    expect(translate('es')('heroLead')).toBe('Marca tu documento.')
+    expect(translate('de')('heroAccent')).toBe('Nichts verlässt dieses Gerät.')
   })
 })

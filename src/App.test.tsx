@@ -17,25 +17,18 @@ describe('initial privacy flow', () => {
   it('explains local processing and offers file and camera input', () => {
     render(<App />)
 
-    expect(screen.getByRole('heading', { name: /share your id/i })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: /watermark your id/i })).toBeInTheDocument()
     expect(screen.getByText('On-device only')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Choose photo' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Take photo' })).toBeInTheDocument()
     expect(screen.getByText('No uploads')).toBeInTheDocument()
     expect(screen.getByText('Works offline')).toBeInTheDocument()
     expect(screen.getByText('No tracking')).toBeInTheDocument()
-    expect(screen.getByText('Add photos')).toBeInTheDocument()
-    expect(screen.getByText('Mark locally')).toBeInTheDocument()
-    expect(screen.getByText('Export')).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'View source on GitHub' })).toHaveAttribute(
       'href',
       'https://github.com/denysvitali/watermark-id',
     )
-    expect(screen.getByRole('link', { name: 'View on GitHub' })).toHaveAttribute(
-      'href',
-      'https://github.com/denysvitali/watermark-id',
-    )
-    expect(screen.getByRole('link', { name: 'MIT licensed' })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: 'MIT License' })).toHaveAttribute(
       'href',
       'https://github.com/denysvitali/watermark-id/blob/main/LICENSE',
     )
@@ -60,7 +53,7 @@ describe('initial privacy flow', () => {
       target: { value: 'de' },
     })
 
-    expect(screen.getByRole('heading', { name: /teile deinen ausweis/i })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: /wasserzeichen auf deinen ausweis/i })).toBeInTheDocument()
     expect(screen.getByRole('combobox', { name: 'Sprache' })).toHaveValue('de')
     expect(document.documentElement).toHaveAttribute('lang', 'de')
     expect(window.localStorage.getItem(LOCALE_STORAGE_KEY)).toBe('de')
@@ -71,7 +64,7 @@ describe('initial privacy flow', () => {
 
     render(<App />)
 
-    expect(screen.getByRole('heading', { name: /partagez votre pièce d’identité/i })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: /filigranez votre pièce/i })).toBeInTheDocument()
     expect(screen.getByRole('combobox', { name: 'Langue' })).toHaveValue('fr')
     expect(window.localStorage.getItem(LOCALE_STORAGE_KEY)).toBeNull()
   })

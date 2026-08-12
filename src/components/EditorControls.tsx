@@ -18,6 +18,7 @@ import type {
   WatermarkPattern,
   WatermarkSettings,
 } from '../types'
+import { CROP_ZOOM_MAX, CROP_ZOOM_MIN } from '../lib/watermark'
 import type { Translate } from '../i18n'
 
 interface EditorControlsProps {
@@ -257,8 +258,8 @@ export function EditorControls({
             <RangeField
               label={t('zoom')}
               value={crop.zoom}
-              min={1}
-              max={3}
+              min={CROP_ZOOM_MIN}
+              max={CROP_ZOOM_MAX}
               step={0.05}
               suffix="×"
               onChange={(zoom) => onCropChange({ ...crop, zoom })}

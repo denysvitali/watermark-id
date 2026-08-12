@@ -5,27 +5,24 @@ const samplePng = Buffer.from(
   'base64',
 )
 
-test('landing page links to the public source and license', async ({ page }) => {
+test('landing page stays on one screen and links to the source', async ({ page }) => {
   await page.goto('./')
-  await expect(page.getByRole('heading', { name: /share your id/i })).toBeVisible()
+  await expect(page.getByRole('heading', { name: /watermark your id/i })).toBeVisible()
   await expect(page.getByRole('link', { name: /view source on github/i })).toHaveAttribute(
     'href',
     'https://github.com/denysvitali/watermark-id',
   )
-  await expect(page.getByRole('link', { name: 'View on GitHub' })).toHaveAttribute(
-    'href',
-    'https://github.com/denysvitali/watermark-id',
-  )
-  await expect(page.getByRole('link', { name: 'MIT licensed' })).toHaveAttribute(
+  await expect(page.getByRole('link', { name: 'MIT License' })).toHaveAttribute(
     'href',
     'https://github.com/denysvitali/watermark-id/blob/main/LICENSE',
   )
-  await expect(page.getByText('Mark locally')).toBeVisible()
+  const overflow = await page.evaluate(() => document.documentElement.scrollHeight - window.innerHeight)
+  expect(overflow).toBeLessThanOrEqual(1)
 })
 
 test('loads, customizes, crops, and downloads an ID', async ({ page }) => {
   await page.goto('./')
-  await expect(page.getByRole('heading', { name: /share your id/i })).toBeVisible()
+  await expect(page.getByRole('heading', { name: /watermark your id/i })).toBeVisible()
 
   await page.locator('input[type="file"]').first().setInputFiles({
     name: 'sample-id.png',
@@ -87,5 +84,5 @@ test('loads the complete application shell while offline', async ({ page, contex
   await context.setOffline(true)
   await page.reload({ waitUntil: 'domcontentloaded' })
 
-  await expect(page.getByRole('heading', { name: /share your id/i })).toBeVisible()
+  await expect(page.getByRole('heading', { name: /watermark your id/i })).toBeVisible()
 })

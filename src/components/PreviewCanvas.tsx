@@ -2,7 +2,12 @@ import { useEffect, useRef, useState } from 'react'
 import { Crop, Move } from 'lucide-react'
 import type { CropSettings, ImageAsset, WatermarkSettings } from '../types'
 import { renderWatermarkedCanvas } from '../lib/canvas'
-import { clamp, ID_CARD_HEIGHT_MM, ID_CARD_WIDTH_MM } from '../lib/watermark'
+import {
+  clamp,
+  ID_CARD_HEIGHT_MM,
+  ID_CARD_WIDTH_MM,
+  scaleCropZoom,
+} from '../lib/watermark'
 import type { Translate } from '../i18n'
 
 interface PreviewCanvasProps {
@@ -13,6 +18,12 @@ interface PreviewCanvasProps {
   t: Translate
 }
 
+type PointerPoint = { x: number; y: number }
+
+function pointerDistance(a: PointerPoint, b: PointerPoint) {
+  return Math.hypot(a.x - b.x, a.y - b.y)
+}
+
 export function PreviewCanvas({
   asset,
   crop,
@@ -21,8 +32,13 @@ export function PreviewCanvas({
   t,
 }: PreviewCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
-  const pointerRef = useRef<{ x: number; y: number } | null>(null)
+  const cropRef = useRef(crop)
+  const pointersRef = useRef(new Map<number, PointerPoint>())
+  const dragRef = useRef<PointerPoint | null>(null)
+  const pinchRef = useRef<{ distance: number; zoom: number } | null>(null)
   const [rendering, setRendering] = useState(true)
+
+  cropRef.current = crop
 
   useEffect(() => {
     const frame = window.requestAnimationFrame(() => {
@@ -46,15 +62,34 @@ export function PreviewCanvas({
     return () => window.cancelAnimationFrame(frame)
   }, [asset, crop, watermark])
 
-  function moveCrop(deltaX: number, deltaY: number) {
+  function moveCrop(current: CropSettings, deltaX: number, deltaY: number) {
     const canvas = canvasRef.current
-    if (!canvas || !crop.enabled) return
+    if (!canvas || !current.enabled) return current
 
-    onCropChange({
-      ...crop,
-      focusX: clamp(crop.focusX - deltaX / canvas.clientWidth, 0, 1),
-      focusY: clamp(crop.focusY - deltaY / canvas.clientHeight, 0, 1),
-    })
+    return {
+      ...current,
+      focusX: clamp(current.focusX - deltaX / canvas.clientWidth, 0, 1),
+      focusY: clamp(current.focusY - deltaY / canvas.clientHeight, 0, 1),
+    }
+  }
+
+  function beginGesture() {
+    const points = [...pointersRef.current.values()]
+    if (points.length >= 2) {
+      if (!cropRef.current.enabled) {
+        const next = { ...cropRef.current, enabled: true }
+        cropRef.current = next
+        onCropChange(next)
+      }
+      dragRef.current = null
+      pinchRef.current = {
+        distance: pointerDistance(points[0], points[1]),
+        zoom: cropRef.current.zoom,
+      }
+      return
+    }
+    pinchRef.current = null
+    dragRef.current = cropRef.current.enabled ? points[0] ?? null : null
   }
 
   return (
@@ -65,20 +100,43 @@ export function PreviewCanvas({
         aria-label={crop.enabled ? t('previewCrop') : t('preview')}
         tabIndex={crop.enabled ? 0 : -1}
         onPointerDown={(event) => {
-          if (!crop.enabled) return
+          event.preventDefault()
           event.currentTarget.setPointerCapture(event.pointerId)
-          pointerRef.current = { x: event.clientX, y: event.clientY }
+          pointersRef.current.set(event.pointerId, { x: event.clientX, y: event.clientY })
+          beginGesture()
         }}
         onPointerMove={(event) => {
-          if (!pointerRef.current || !crop.enabled) return
-          moveCrop(event.clientX - pointerRef.current.x, event.clientY - pointerRef.current.y)
-          pointerRef.current = { x: event.clientX, y: event.clientY }
+          if (!pointersRef.current.has(event.pointerId)) return
+          pointersRef.current.set(event.pointerId, { x: event.clientX, y: event.clientY })
+
+          const pinch = pinchRef.current
+          if (pinch && pointersRef.current.size >= 2) {
+            const [first, second] = pointersRef.current.values()
+            const distance = pointerDistance(first, second)
+            if (pinch.distance < 1) return
+            onCropChange({
+              ...cropRef.current,
+              zoom: scaleCropZoom(pinch.zoom, distance / pinch.distance),
+            })
+            return
+          }
+
+          if (!dragRef.current || pointersRef.current.size !== 1) return
+          const next = moveCrop(
+            cropRef.current,
+            event.clientX - dragRef.current.x,
+            event.clientY - dragRef.current.y,
+          )
+          dragRef.current = { x: event.clientX, y: event.clientY }
+          onCropChange(next)
         }}
-        onPointerUp={() => {
-          pointerRef.current = null
+        onPointerUp={(event) => {
+          pointersRef.current.delete(event.pointerId)
+          beginGesture()
         }}
-        onPointerCancel={() => {
-          pointerRef.current = null
+        onPointerCancel={(event) => {
+          pointersRef.current.delete(event.pointerId)
+          beginGesture()
         }}
         onKeyDown={(event) => {
           const movement: Record<string, [number, number]> = {
@@ -90,7 +148,7 @@ export function PreviewCanvas({
           const delta = movement[event.key]
           if (delta) {
             event.preventDefault()
-            moveCrop(...delta)
+            onCropChange(moveCrop(cropRef.current, ...delta))
           }
         }}
       />

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'watermark-id-v5'
+const CACHE_NAME = 'watermark-id-v6'
 const APP_SHELL = []
 
 self.addEventListener('install', (event) => {

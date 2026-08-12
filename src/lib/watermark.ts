@@ -9,9 +9,15 @@ export const ID_CARD_WIDTH_MM = 85.6
 export const ID_CARD_HEIGHT_MM = 53.98
 export const ID_CARD_RATIO = ID_CARD_WIDTH_MM / ID_CARD_HEIGHT_MM
 export const MAX_EXPORT_EDGE = 4096
+export const CROP_ZOOM_MIN = 1
+export const CROP_ZOOM_MAX = 3
 
 export function clamp(value: number, min: number, max: number) {
   return Math.min(max, Math.max(min, value))
+}
+
+export function scaleCropZoom(zoom: number, scale: number) {
+  return clamp(zoom * scale, CROP_ZOOM_MIN, CROP_ZOOM_MAX)
 }
 
 export function getCropRect(
@@ -35,7 +41,7 @@ export function getCropRect(
     baseHeight = sourceWidth / ID_CARD_RATIO
   }
 
-  const zoom = clamp(crop.zoom, 1, 3)
+  const zoom = clamp(crop.zoom, CROP_ZOOM_MIN, CROP_ZOOM_MAX)
   const width = baseWidth / zoom
   const height = baseHeight / zoom
   const x = (sourceWidth - width) * clamp(crop.focusX, 0, 1)

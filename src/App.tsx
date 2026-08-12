@@ -136,6 +136,16 @@ export default function App() {
   }, [locale, t])
 
   useEffect(() => {
+    const landing = !asset
+    document.documentElement.classList.toggle('is-landing', landing)
+    document.body.classList.toggle('is-landing', landing)
+    return () => {
+      document.documentElement.classList.remove('is-landing')
+      document.body.classList.remove('is-landing')
+    }
+  }, [asset])
+
+  useEffect(() => {
     return () => {
       assetsRef.current.forEach((item) => URL.revokeObjectURL(item.objectUrl))
     }
@@ -329,7 +339,7 @@ export default function App() {
   }
 
   return (
-    <div className="app-shell">
+    <div className={`app-shell ${asset ? '' : 'is-landing'}`.trim()}>
       <header className="app-header">
         <a className="brand" href={import.meta.env.BASE_URL} aria-label={t('home')}>
           <span className="brand-mark"><ShieldCheck size={20} /></span>
@@ -505,10 +515,8 @@ export default function App() {
 
       {!asset && (
         <footer className="site-footer">
-          <span>Watermark ID</span>
-          <span className="footer-dot">·</span>
-          <span>{t('privateOfflineYours')}</span>
-          <span className="footer-dot">·</span>
+          <span className="footer-tagline">{t('privateOfflineYours')}</span>
+          <span className="footer-dot footer-tagline-dot">·</span>
           <a href={GITHUB_REPO} target="_blank" rel="noreferrer">{t('viewSource')}</a>
           <span className="footer-dot">·</span>
           <a href={GITHUB_LICENSE} target="_blank" rel="noreferrer">{t('mitLicense')}</a>

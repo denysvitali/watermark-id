@@ -7,6 +7,7 @@ import {
   getWatermarkText,
   ID_CARD_RATIO,
   safeFileStem,
+  scaleCropZoom,
 } from './watermark'
 
 const crop: CropSettings = {
@@ -46,6 +47,12 @@ describe('ID-1 crop geometry', () => {
     expect(rect.height).toBe(500)
     expect(rect.x + rect.width).toBeCloseTo(2000)
     expect(rect.y).toBe(0)
+  })
+
+  it('scales crop zoom inside the 1×–3× range', () => {
+    expect(scaleCropZoom(1, 2)).toBe(2)
+    expect(scaleCropZoom(2, 2)).toBe(3)
+    expect(scaleCropZoom(1.5, 0.5)).toBe(1)
   })
 
   it('preserves the source when cropping is off', () => {
