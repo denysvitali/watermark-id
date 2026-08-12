@@ -39,6 +39,9 @@ body {
 
 html.is-landing,
 html.is-landing body {
+  position: fixed;
+  inset: 0;
+  width: 100%;
   height: 100%;
   overflow: hidden;
   overscroll-behavior: none;
@@ -91,11 +94,22 @@ canvas:focus-visible {
 }
 
 .app-shell.is-landing {
-  height: 100vh;
-  height: 100dvh;
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
   overflow: hidden;
   overscroll-behavior: none;
   touch-action: manipulation;
+}
+
+.app-shell.is-landing .app-header {
+  position: relative;
+  flex: 0 0 auto;
+}
+
+.app-shell.is-landing .site-footer {
+  flex: 0 0 auto;
 }
 
 .app-header {
@@ -414,8 +428,8 @@ canvas:focus-visible {
 }
 
 .site-footer {
-  min-height: 54px;
-  padding: 14px 24px max(14px, env(safe-area-inset-bottom));
+  min-height: 42px;
+  padding: 8px 24px max(8px, env(safe-area-inset-bottom));
   display: flex;
   flex-wrap: wrap;
   align-items: center;

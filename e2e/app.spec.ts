@@ -16,8 +16,9 @@ test('landing page stays on one screen and links to the source', async ({ page }
     'href',
     'https://github.com/denysvitali/watermark-id/blob/main/LICENSE',
   )
-  const overflow = await page.evaluate(() => document.documentElement.scrollHeight - window.innerHeight)
-  expect(overflow).toBeLessThanOrEqual(1)
+  await page.evaluate(() => window.scrollTo(0, 400))
+  expect(await page.evaluate(() => window.scrollY)).toBe(0)
+  expect(await page.evaluate(() => getComputedStyle(document.documentElement).position)).toBe('fixed')
 })
 
 test('loads, customizes, crops, and downloads an ID', async ({ page }) => {

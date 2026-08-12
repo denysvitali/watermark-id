@@ -1,4 +1,4 @@
-const CACHE_NAME = 'watermark-id-v6'
+const CACHE_NAME = 'watermark-id-v7'
 const APP_SHELL = []
 
 self.addEventListener('install', (event) => {
@@ -21,6 +21,23 @@ self.addEventListener('fetch', (event) => {
 
   const requestUrl = new URL(event.request.url)
   if (requestUrl.origin !== self.location.origin) return
+  if (requestUrl.pathname.endsWith('/sw.js')) return
+
+  const isNavigate = event.request.mode === 'navigate'
+  if (isNavigate) {
+    event.respondWith(
+      fetch(event.request)
+        .then((response) => {
+          if (response.ok) {
+            const copy = response.clone()
+            caches.open(CACHE_NAME).then((cache) => cache.put('./index.html', copy))
+          }
+          return response
+        })
+        .catch(() => caches.match('./index.html')),
+    )
+    return
+  }
 
   event.respondWith(
     caches.match(event.request, { ignoreSearch: true }).then((cached) => {
@@ -32,12 +49,7 @@ self.addEventListener('fetch', (event) => {
           }
           return response
         })
-        .catch(() => {
-          if (event.request.mode === 'navigate') {
-            return caches.match('./index.html')
-          }
-          return undefined
-        })
+        .catch(() => cached)
 
       return cached || networkResponse
     }),

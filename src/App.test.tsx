@@ -18,6 +18,8 @@ describe('initial privacy flow', () => {
     render(<App />)
 
     expect(screen.getByRole('heading', { name: /watermark your id/i })).toBeInTheDocument()
+    expect(document.documentElement).toHaveClass('is-landing')
+    expect(document.body).toHaveClass('is-landing')
     expect(screen.getByText('On-device only')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Choose photo' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Take photo' })).toBeInTheDocument()
