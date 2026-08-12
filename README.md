@@ -27,7 +27,7 @@ pnpm install --frozen-lockfile
 pnpm dev
 ```
 
-Open the local URL shown by Vite. The GitHub Pages base path is configured as `/watermark-id/`.
+Open the local URL shown by Vite. Production is served at the site root: https://watermark-id.com/.
 
 ## Verification
 
